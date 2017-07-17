@@ -1,0 +1,88 @@
+@startuml
+abstract Object
+
+package "imgbased.imgbased.init" #DDDDDD {
+	Object <|-- class Application
+
+	Application : Bool experimental
+	Application : ImageLayers imgbase
+	Application : Hooks hooks
+	Application : __init__(self)
+	Application : Object plugins
+
+	class CliApplication << (M,#FF7700)>> {
+		List args
+		Application app 
+		ArgumentParser parser
+	}
+
+	CliApplication o- Application
+}
+
+package "imgbased.imgbased.imgbase" #DDDDDD {
+	class ImageLayers {
+		Configuration config
+		Bool debug
+		Bool dry
+		Hooks hooks
+		String hooksdir,thinpool_profile
+		String vg_tag,thinpool_tag,lv_init_tag,lv_base_tag,lv_layer_tag
+		NvrNaming naming
+		__init__()
+		+list_our_lv_names()
+		-_vg()
+		+lv()
+		-_thinpool()
+		-_lvm_from_layer()
+		+has_tags()
+		+lv_from_layer()
+		+image_from_path()
+		+image_from_lvm_name()
+		+layout()
+		+add_layer_on_latest()
+		+add_layer_on_current()
+		+add_layer()
+		-_add_lvm_snapshot()
+		+init_tags_on()
+		+init_layout_from()
+		+add_base()
+		+remove_base()
+		+remove_layer()
+		+free_space()
+		+latest_base()
+		+latest_layer()
+		+current_layer()
+		+base_of_layer()
+	}
+
+	Object <|-- ImageLayers
+}
+
+package "imgbased.imgbased.Hooks" #DDDDDD {
+	class Hooks {
+		String context
+		Dict hooks
+		Dict _argspecs
+		__init__()
+		+create()
+		+connect()
+		+unconnect()
+		+emit()
+		+add_filesystem_emitter()
+	}
+
+	Object <|-- Hooks
+}
+
+package "imgbased.imgbased.plugins.init" #DDDDDD {
+	class "init()" << (M,#FF7700) >> {
+		-_on_all_plugins()
+		-_on_all_plugins()
+	}
+}
+
+class Application o- class ImageLayers
+class Application o- class Hooks
+class Application o- class "init()"
+
+@enduml
