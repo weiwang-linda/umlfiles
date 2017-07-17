@@ -1,0 +1,27 @@
+@startuml
+
+init : Initiation func
+gs_destory : auto execute
+
+[*] --> init
+
+state "hooks state" as hook {
+	create : Create a hook
+	connect : Connect a callback to a hook
+	unconnect : Unconnect a callback to a hook
+	emit : Trigger a specific hook
+	add_filesystem_emitter : Used to fs
+
+	[*] --> create : hook_name/argspec
+	create --> connect : hooks[name].add(cb)
+	connect --> unconnect : hooks[name].remove(cb)
+	unconnect --> connect : hooks[name].add(cb)
+	connect --> emit : cb(self.context, *args)
+	[*] --> add_filesystem_emitter : path
+	add_filesystem_emitter --> connect : hooks[name].add(cb)
+}
+
+init --> hook
+hook --> gs_destory
+gs_destory --> [*]
+@enduml
