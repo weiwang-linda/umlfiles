@@ -2,7 +2,7 @@
 abstract Object
 
 package "imgbased.imgbased.init" #DDDDDD {
-	Object <|-- class Application
+	Object <|.. class Application
 
 	Application : Bool experimental
 	Application : ImageLayers imgbase
@@ -17,6 +17,20 @@ package "imgbased.imgbased.init" #DDDDDD {
 	}
 
 	CliApplication o- Application
+}
+
+package "logging.Logger" {
+	class Logger {
+		+debug()
+		+setLevel()
+	}
+}
+
+package "argparse.ArgumentParser" {
+	class ArgumentParser {
+		+add_argument()
+		+parse_args()
+	}
 }
 
 package "imgbased.imgbased.imgbase" #DDDDDD {
@@ -55,7 +69,7 @@ package "imgbased.imgbased.imgbase" #DDDDDD {
 		+base_of_layer()
 	}
 
-	Object <|-- ImageLayers
+	Object <|.. ImageLayers
 }
 
 package "imgbased.imgbased.Hooks" #DDDDDD {
@@ -71,7 +85,7 @@ package "imgbased.imgbased.Hooks" #DDDDDD {
 		+add_filesystem_emitter()
 	}
 
-	Object <|-- Hooks
+	Object <|.. Hooks
 }
 
 package "imgbased.imgbased.plugins.init" #DDDDDD {
@@ -83,6 +97,15 @@ package "imgbased.imgbased.plugins.init" #DDDDDD {
 
 class Application o- class ImageLayers
 class Application o- class Hooks
-class Application o- class "init()"
+class Application -- class "init()"
+class Application o- class Boolean
 
+class Hooks <.. class Context
+class Hooks <.. class String
+class Hooks <.. class Tuple
+
+CliApplication o- class Logger
+CliApplication o- class ArgumentParser
+CliApplication <. class args << key:val >>
+CliApplication - class argv << list >>
 @enduml
