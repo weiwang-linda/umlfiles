@@ -1,10 +1,11 @@
 @startuml
 abstract Object
+abstract Exception
 
 package "imgbased.imgbased.init" #DDDDDD {
 	Object <|.. class Application
 
-	Application : Bool experimental
+	Application : Boolean experimental
 	Application : ImageLayers imgbase
 	Application : Hooks hooks
 	Application : __init__(self)
@@ -23,7 +24,19 @@ package "logging.Logger" {
 	class Logger {
 		+debug()
 		+setLevel()
+		+addHandler()
 	}
+}
+
+package "logging.Handler" {
+	class Handler {
+		+setLevel()
+		+setFormatter()
+	}
+}
+
+package "logging.Formatter" {
+	class Formatter
 }
 
 package "argparse.ArgumentParser" {
@@ -95,17 +108,382 @@ package "imgbased.imgbased.plugins.init" #DDDDDD {
 	}
 }
 
+package "imgbased.imgbased.main" #DDDDDD {
+	class noclass 
+}
+
+package "imgbased.imgbased.bootloader" #DDDDDD {
+	Exception <|.. class BootloaderError
+	BootloaderError <|.. InvalidBootEntryError
+	BootloaderError <|.. NoKeyFoundError
+
+	class Bootloader {
+		Boolean dry
+		__init__()
+		+list()
+		+set_default()
+		+get_default()
+		+add_entry()
+		+remove_entry()
+	}
+
+	Object <|.. Bootloader
+
+	class Grubby {
+		String _keyarg
+		GrubbyEntry
+		-_parse_key_from_args()
+		-_get_valid_entries()
+		-_get_other_entries()
+		-_parse_entries()
+		+add_entry()
+		+remove_entry()
+		+set_default()
+		+get_default()
+		+list()
+		+list_other()
+		-_backup()
+		+remove_other_entries()
+	}
+
+	class GrubbyEntry{
+		Dict args
+		Boolean root
+		Integer index
+		String title
+		String kernel
+		String initrd
+		{static} parse()
+	}
+
+	Bootloader <|-- Grubby
+	Grubby <-- GrubbyEntry
+
+	class BootConfiguration {
+		Grubby bootloader
+		__init__()
+		-_key_from_layer()
+		+list()
+		+list_other()
+		+add()
+		+remove()
+		+remove_other_entries()
+		+set_default()
+		+get_default()
+	}
+
+	BootConfiguration o- Grubby
+}
+
+package "imgbased.imgbased.local" #DDDDDD {
+	class Configuration {
+		String CFG_FILE,CFG_DIR,USER_CFG_PREFIX,VENDOR_CFG_PREFIX
+		String cfgstr
+		+property() : core
+		List _known_section_types
+		+{static} register_section()
+		-_parser()
+		+section()
+		+section_from_type()
+		+sections()
+		+remove()
+		+save()
+		-_write()
+	}
+
+	class Section {
+		__repr__()
+		+known_attributes()
+		+section_name()
+		+save()
+	}
+
+	Object <|.. Section
+
+	class CoreSection {
+		String _type
+		Boolean experimental
+		Boolean debug
+	}
+
+	Section <|-- CoreSection
+	Configuration *- CoreSection
+}
+
+package "imgbased.imgbased.lvm" #DDDDDD {
+	Exception <|.. class MissingLvmThinPool
+	Exception <|.. class ThinPoolMetadataError
+
+	class LVM {
+		_lvs
+    	_vgs
+    	_lvcreate
+    	_lvchange
+    	_lvremove
+    	_lvextend
+    	_vgcreate
+    	_vgchange
+    	_lvmconfig
+    	-{static} _list_lv_full_names()
+    	+{static} list_lvs()
+    	+{static} is_name_valid()
+    	+{static} stop_monitoring()
+	}
+
+	class VG {
+		String vg_name
+		__init__()
+		__repr__()
+		+{static} from_vg_name()
+		+{static} find_by_tag()
+		+{static} from_tag()
+		+{static} create()
+		+addtag()
+		+tags()
+	}
+
+	class LV {
+		String vg_name
+		String lv_name
+		+property() : lvm_name
+		+property() : path
+		+property() : size_bytes
+		+{static} from_lv_name()
+		__repr__()
+		+{static} try_find()
+		+{static} find_by_tag()
+		+{static} from_tag()
+		+{static} from_lvm_name()
+		+{static} from_path()
+		+create_snapshot()
+		+remove()
+		+activate()
+		+setactivationskip()
+		+permission()
+		+thinpool()
+		+addtag()
+		+tags()
+		+origin()
+		+profile()
+		+set_profile()
+		+options()
+		+protect()
+		+unprotect()
+		+unprotected()
+	}
+
+	class UnprotectedBase {
+		__enter__()
+		__exit__()
+	}
+	Object <|.. UnprotectedBase
+	LV *- UnprotectedBase
+
+	class Thinpool {
+		+create_thinvol()
+		-_get_metadata_size()
+		-_resize_metadata()
+		+check_metadata_size()
+	}
+
+	Object <|.. LVM
+	Object <|.. VG
+	Object <|.. LV
+	class LVM *- class VG
+	class LVM *- class LV
+	class LV <|-- class Thinpool
+}
+
+package "imgbased.imgbased.naming" #DDDDDD {
+	class NamingScheme {
+
+	}
+
+	class NvrNaming {
+
+	}
+
+	class NVR {
+
+	}
+
+	class Image {
+
+	}
+
+	class Base {
+
+	}
+
+	class Layer {
+
+	}
+
+	NamingScheme <|-- NvrNaming
+	Object <|.. NVR
+	Object <|.. Image
+	Image <|-- Base
+	Image <|-- Layer
+}
+
+package "imgbased.imgbased.nsutils" #DDDDDD {
+	class NSBinary {
+
+	}
+
+	class SystemdNS {
+
+	}
+
+	Object <|.. SystemdNS
+	ExternalBinary <|-- NSBinary
+}
+
+package "imgbased.imgbased.utils" #DDDDDD {
+	Exception <|.. FilesystemNotSupported
+	Exception <|.. HumanReadableError
+
+	class MountPoint {
+
+	}
+
+	class mounted {
+
+	}
+
+	class Filesystem {
+
+	}
+
+	class Ext4 {
+
+	}
+
+	class XFS {
+
+	}
+
+	class ExternalBinary {
+
+	}
+
+	class LvmBinary {
+	
+	}
+
+	class LvmCLI {
+
+	}
+
+	class SELinuxDomain {
+
+	}
+
+	class File {
+
+	}
+
+	class Fstab {
+
+	}
+
+	class ShellVarFile {
+
+	}
+
+	class Motd {
+
+	}
+
+	class PackageDb {
+
+	}
+
+	class RpmPackage {
+
+	}
+
+	class systemctl {
+
+	}
+
+	class Tar {
+
+	}
+
+	class Rsync {
+
+	}
+
+	class IDMap {
+
+	}
+
+	class SystemRelease {
+
+	}
+
+	class OSRelease {
+
+	}
+
+	class BuildMetadata {
+
+	}
+
+	class bcolors {
+
+	}
+
+	class bcolors256 {
+
+	}
+
+	class ThreadRunner {
+
+	}
+
+	class ExitStack {
+
+	}
+}
+
+package "imgbased.imgbased.volume" #DDDDDD {
+	class Volumes {
+
+	}
+}
+
+package "imgbased.imgbased.plugin-dnf.imgbased-persist" #DDDDDD {
+	class ImgbasedPersist {
+
+	}
+}
+
+package "imgbased.imgbased.plugin-yum.imgbased-persist" #DDDDDD {
+	
+}
+
 class Application o- class ImageLayers
 class Application o- class Hooks
 class Application -- class "init()"
 class Application o- class Boolean
 
 class Hooks <.. class Context
-class Hooks <.. class String
-class Hooks <.. class Tuple
+class Hooks -- class Logger
 
 CliApplication o- class Logger
 CliApplication o- class ArgumentParser
 CliApplication <. class args << key:val >>
 CliApplication - class argv << list >>
+
+class Logger o- class Handler
+class Logger -- class Formatter
+
+class noclass -- class Logger
+class noclass -- CliApplication
+
+class bootloader -- class Logger
+class Configuration -- class Logger
+
 @enduml
