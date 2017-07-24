@@ -1,0 +1,152 @@
+@startuml
+abstract Object
+abstract Exception
+
+package "imgbased.imgbased.init" #DDDDDD {
+	Object <|.. class Application
+
+	class Application
+}
+
+package "imgbased.imgbased.imgbase" #DDDDDD {
+	class ImageLayers 
+
+	Object <|.. ImageLayers
+}
+
+package "imgbased.imgbased.Hooks" #DDDDDD {
+	class Hooks
+
+	Object <|.. Hooks
+}
+
+package "imgbased.imgbased.plugins.init" #DDDDDD {
+	class "init()" << (M,#FF7700) >>
+}
+
+package "imgbased.imgbased.main" #DDDDDD {
+	class noclass 
+}
+
+package "imgbased.imgbased.bootloader" #DDDDDD {
+	Exception <|. class BootloaderError
+	BootloaderError <|.. InvalidBootEntryError
+	BootloaderError <|.. NoKeyFoundError
+
+	class Bootloader
+
+	Object <|.. Bootloader
+
+	class Grubby
+
+	class GrubbyEntry
+
+	Bootloader <|-- Grubby
+	Grubby <-- GrubbyEntry
+
+	class BootConfiguration 
+
+	BootConfiguration o-- Grubby
+}
+
+package "imgbased.imgbased.local" #DDDDDD {
+	class Configuration 
+	class Section 
+	Object <|.. Section
+
+	class CoreSection
+	Section <|-- CoreSection
+	Configuration *-- CoreSection
+}
+
+package "imgbased.imgbased.lvm" #DDDDDD {
+	Exception <|.. class MissingLvmThinPool
+	Exception <|.. class ThinPoolMetadataError
+
+	class LVM
+	class VG 
+	class LV 
+	class UnprotectedBase 
+	Object <|.. UnprotectedBase
+	LV *-- UnprotectedBase
+
+	class Thinpool 
+	Object <|.. LVM
+	Object <|.. VG
+	Object <|.. LV
+	class LVM *- class VG
+	class LVM *-- class LV
+	class LV <|-- class Thinpool
+}
+
+package "imgbased.imgbased.naming" #DDDDDD {
+	class NamingScheme
+	class NvrNaming 
+	class NVR 
+	class Image 
+	class Base 
+	class Layer 
+
+	NamingScheme <|-- NvrNaming
+	Object <|.. NVR
+	Object <|.. Image
+	Image <|-- Base
+	Image <|-- Layer
+}
+
+package "imgbased.imgbased.nsutils" #DDDDDD {
+	class NSBinary 
+	class SystemdNS 
+	Object <|.. SystemdNS
+	ExternalBinary <|-- NSBinary
+}
+
+package "imgbased.imgbased.utils" #DDDDDD {
+	Exception <|.. FilesystemNotSupported
+	Exception <|.. HumanReadableError
+
+	class MountPoint 
+	class mounted 
+	class Filesystem 
+	class Ext4 
+	class XFS 
+	class ExternalBinary 
+	class LvmBinary 
+	class LvmCLI
+	class SELinuxDomain
+	class File
+	class Fstab
+	class ShellVarFile
+	class Motd
+	class PackageDb
+	class RpmPackage
+	class systemctl 
+	class Tar
+	class Rsync
+	class IDMap
+	class SystemRelease
+	class OSRelease
+	class BuildMetadata
+	class bcolors
+	class bcolors256
+	class ThreadRunner
+	class ExitStack
+}
+
+package "imgbased.imgbased.volume" #DDDDDD {
+	class Volumes
+}
+
+package "imgbased.imgbased.plugin-dnf.imgbased-persist" #DDDDDD {
+	class ImgbasedPersist
+}
+
+package "imgbased.imgbased.plugin-yum.imgbased-persist" #DDDDDD {
+	
+}
+
+class Application o- class ImageLayers
+class Application o- class Hooks
+class Application -- class "init()"
+
+@enduml
